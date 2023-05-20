@@ -4,6 +4,7 @@ import sys
 import time
 import threading
 from random import shuffle
+from Connect4_game import Connect4Game
 
 from kik_unofficial.client import KikClient
 from kik_unofficial.callbacks import KikClientCallback
@@ -22,8 +23,8 @@ from kik_unofficial.datatypes.xmpp.chatting import (
     IncomingGroupStatus,
 )
 
-username = "Connect4Bot_"
-password = ""
+username = "Username"
+password = "Password"
 
 games = {}
 
@@ -45,69 +46,154 @@ class Connect4Bot(KikClientCallback):
         self.client = KikClient(self, username, password)
         self.client.wait_for_messages()
 
+        self.senderJID = None
+        self.senderName = None
+        self.groupJID = None
+
     def on_authenticated(self):
         print("Now I'm Authenticated, let's request roster")
         self.client.request_roster()
 
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
-        print(f"{jid_to_username(chat_message.from_jid)}: {chat_message.body}")
-        group_jid = chat_message.group_jid
-        message_sender = jid_to_username(chat_message.from_jid)
+        """Called when a group chat message is received"""
 
-        if chat_message.body.lower() == "reset":
-            games.pop(group_jid)
-            self.client.send_chat_message(group_jid, "Game Reset")
+        self.senderJID = chat_message.from_jid
+        self.groupJID = chat_message.group_jid
+        self.message = chat_message.body
+        self.senderName = jid_to_username(self.senderJID)
+        # get display name of the user who sent the message
+        response = self.client.xiphias_get_users_by_alias([chat_message.from_jid])
 
-        if startGame(chat_message.body):
-            if group_jid not in games:
-                games[group_jid] = Connect4Game(player1=chat_message.from_jid)
-                self.client.send_chat_message(
-                    group_jid,
-                    f"{message_sender} joined, Type Connect to join",
-                )
+    def processMessage(self, message, playerJID, playerName, groupJID):
+        message = message.lower()
+
+        # check if message
+        if message == "reset":
+            if groupJID in games:
+                games.pop(groupJID)
+                self.client.send_chat_message(groupJID, "Game Reset")
             else:
-                game = games[group_jid]
-                if game.player2 is None and game.player1 != chat_message.from_jid:
-                    game.player2 = chat_message.from_jid
-                    self.client.send_chat_message(group_jid, game.__str__())
-                    game.start()
-                    self.client.send_chat_message(
-                        group_jid, f"{message_sender}'s turn'"
-                    )
+                self.client.send_chat_message(groupJID, "No game to reset")
+            return True
 
-                else:
-                    if game.player1 != chat_message.from_jid:
-                        self.client.send_chat_message(
-                            group_jid, "You are already in the game"
-                        )
-                    self.client.send_chat_message(group_jid, "Game already in progress")
+        # player is joining a game
+        elif message in ["c", "connect"]:
+            self.startGame(playerJID, playerName, groupJID)
+            return True
 
-        elif (move := gameMove(chat_message.body)) != -1:
-            print("move detected")
-            if group_jid in games:
-                game = games[group_jid]
-                if (
-                    game.game_running
-                    and chat_message.from_jid
-                    == game.get_players()[game.get_turn_number() - 1]
-                ):
-                    if game.play(move):
-                        self.client.send_chat_message(group_jid, game.__str__())
-                        self.client.send_chat_message(
-                            group_jid, f"{game.get_prev_turn()} played at {move}"
-                        )
-                        if game.winner:
-                            self.client.send_chat_message(
-                                group_jid, f"{game.get_winner()} won!"
-                            )
-                            del games[group_jid]
-                        elif game.is_full():
-                            self.client.send_chat_message(
-                                group_jid, "Game ended in a draw"
-                            )
-                            del games[group_jid]
-                    else:
-                        self.client.send_chat_message(group_jid, "Invalid move")
+        # player is making a move
+        else:
+            message = message.split()
+
+            # check if message is a move
+            if len(message) == 2 and (
+                message[0] in ["c", "connect"] and message[1].isdigit()
+            ):
+                move = int(message[1])
+                self.playMove(move, playerJID, groupJID)
+                return True
+
+            if len(message) == 2 and (message[0] == "start" and message[1].isdigit()):
+                self.startGame(playerJID, playerName, groupJID, int(message[1]))
+                return True
+
+            # check if message is a move
+            elif len(message) == 1:
+                message = message[0]
+                m1 = message.split("c")[-1]
+                m2 = message.split("connect")[-1]
+
+                if len(m1) == 2 and m1[1].isdigit():
+                    move = int(m1[1])
+                    self.playMove(move, playerJID, groupJID)
+
+                elif len(m2) == 2 and m2[1].isdigit():
+                    move = int(m2[1])
+                    self.playMove(move, playerJID, groupJID)
+                return True
+            else:
+                return False
+
+    def startGame(self, playerJID, playerName, groupJID, gameType=4):
+        # start game if not already started
+
+        # check if game exists, if not, create one
+        if groupJID not in games:
+            games[groupJID] = Connect4Game(in_a_row=gameType)
+            self.client.send_chat_message(groupJID, f"Connect {gameType} initiated")
+
+        game = games[groupJID]
+
+        # add player to game
+        if (response := game.addPlayer(playerJID, playerName)) == 0:
+            self.client.send_chat_message(
+                groupJID, f"{playerName} joined, Type Connect to join"
+            )
+            return True
+
+        # player already in game
+        elif response == 1:
+            self.client.send_chat_message(groupJID, "Player already in game")
+
+        # game already in progress
+        elif response == 2:
+            self.client.send_chat_message(groupJID, "Game already in progress")
+
+        elif response == 100:
+            self.client.send_chat_message(groupJID, game.__str__())
+            self.client.send_chat_message(groupJID, f"{game.get_turn_name()}'s turn")
+
+    def playMove(self, move, playerJID, groupJID):
+        # check if game exists
+        if groupJID in games:
+            game = games[groupJID]
+        else:
+            self.client.send_chat_message(groupJID, "No game in progress")
+            return
+
+        # play move
+        response = game.play(playerJID, move)
+
+        # move was valid
+        if response == 0:
+            self.client.send_chat_message(groupJID, game.__str__())
+            self.client.send_chat_message(groupJID, f"{game.get_turn_name()}'s turn")
+
+        # no game in progress
+        elif response == 1:
+            self.client.send_chat_message(groupJID, "No game in progress")
+
+        # invalid move (out of bounds)
+        elif response == 2:
+            self.client.send_chat_message(groupJID, "Invalid move")
+
+        # not your turn
+        elif response == 3:
+            self.client.send_chat_message(groupJID, "Not your turn")
+
+        # not your game
+        elif response == 4:
+            self.client.send_chat_message(groupJID, "You are not in this game!")
+
+        # The column is full
+        elif response == 5:
+            self.client.send_chat_message(groupJID, "Column is full")
+
+        # Game ended successfully
+        elif response == 100:
+            self.client.send_chat_message(groupJID, game.__str__())
+            self.client.send_chat_message(groupJID, f"{game.get_winner()} won!")
+            games.pop(groupJID)
+
+        # Game ended in a draw
+        elif response == 101:
+            self.client.send_chat_message(groupJID, game.__str__())
+            self.client.send_chat_message(groupJID, "Game ended in a draw")
+            games.pop(groupJID)
+
+    def resetGame(self, group_jid):
+        games.pop(group_jid)
+        self.client.send_chat_message(group_jid, "Game Reset")
 
     def on_connection_failed(self, response: ConnectionFailedResponse):
         print(f"[-] Connection failed: {response.message}")
@@ -119,15 +205,21 @@ class Connect4Bot(KikClientCallback):
     def on_register_error(self, response: SignUpError):
         print(f"[-] Register error: {response.message}")
 
+    def on_xiphias_get_users_response(self, response):
+        for user in response.users:
+            jid = user.alias_jid or user.jid
+            name = user.display_name
+
+            if name is None:
+                name = self.senderName
+
+            self.processMessage(self.message, self.senderJID, name, self.groupJID)
+
+            print(f"Display name for {jid} = {name}")
+
 
 def jid_to_username(jid):
     return jid.split("@")[0][:-4]
-
-
-def startGame(message: str):
-    message = message.split()
-
-    return False if len(message) > 1 else message[0].lower() in ["c", "connect"]
 
 
 def gameMove(message: str):
@@ -140,96 +232,6 @@ def gameMove(message: str):
         return -1
 
     return int(message[1]) if message[1].isdigit() else -1
-
-
-class Connect4Game:
-    def __init__(self, player1=None, player2=None, in_a_row=4):
-        self.in_a_row = in_a_row
-        self.x = in_a_row * 2 - 1
-        self.y = in_a_row + 2
-        self.board = [[0 for _ in range(self.x)] for _ in range(self.y)]
-        self.player1 = player1
-        self.player2 = player2
-        self.turn = 1
-        self.winner = None
-        self.game_running = False
-
-    def get_board(self):
-        return self.board
-
-    def get_turn(self):
-        if self.turn == 1:
-            return jid_to_username(self.player1)
-        else:
-            return jid_to_username(self.player2)
-
-    def get_prev_turn(self):
-        if self.turn == 1:
-            return jid_to_username(self.player2)
-        else:
-            return jid_to_username(self.player1)
-
-    def get_turn_number(self):
-        return self.turn
-
-    def get_winner(self):
-        return jid_to_username(self.winner)
-
-    def get_players(self):
-        return self.player1, self.player2
-
-    def get_in_a_row(self):
-        return self.in_a_row
-
-    def play(self, location):
-        location -= 1
-        if location < 0 or location >= self.x:
-            return False
-
-        for i in range(self.y - 1, -1, -1):
-            if self.board[i][location] == 0:
-                self.board[i][location] = self.turn
-                if self.check_winner(self.turn, i, location):
-                    self.winner = self.player1 if self.turn == 1 else self.player2
-                self.turn = 1 if self.turn == 2 else 2
-                return True
-        return False
-
-    def check_winner(self, player, row, col):
-        directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-
-        for dr, dc in directions:
-            count = 1
-            for d in (1, -1):
-                r, c = row + dr * d, col + dc * d
-                while (
-                    0 <= r < self.y and 0 <= c < self.x and self.board[r][c] == player
-                ):
-                    count += 1
-                    r += dr * d
-                    c += dc * d
-
-            if count >= self.in_a_row:
-                return True
-        return False
-
-    def is_full(self):
-        return all(self.board[0][i] != 0 for i in range(self.x))
-
-    def __str__(self):
-        result = "".join(
-            "".join(["🔴" if cell == 1 else "🟡" if cell == 2 else "⚪️" for cell in row])
-            + "\n"
-            for row in self.board
-        )
-        result += "-" * (self.x * 2 - 1)
-        return result
-
-    def start(self):
-        players = [self.player1, self.player2]
-        shuffle(players)
-        self.player1, self.player2 = players
-        self.game_running = True
 
 
 if __name__ == "__main__":
