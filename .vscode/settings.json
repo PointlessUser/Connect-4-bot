@@ -1,9 +1,0 @@
-{
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  },
-  "python.formatting.provider": "none",
-  "python.analysis.extraPaths": [
-    "./kik-bot-api-unofficial/kik_unofficial/protobuf/groups/v1"
-  ]
-}
