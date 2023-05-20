@@ -7,7 +7,7 @@ class Connect4Game:
         # build the board
         self.in_a_row = in_a_row  # Number of pieces in a row to win
         self.x = in_a_row * 2 - 1  # Width of the board
-        self.y = in_a_row + 2 - 1  # Height of the board
+        self.y = in_a_row + 2 # Height of the board
         # 2D array representing the board. 0 is empty, 1 is player 1, 2 is player 2
         self.board = [[0 for _ in range(self.x)] for _ in range(self.y)]
 
@@ -18,6 +18,7 @@ class Connect4Game:
         self.turn = 1  # 1 or 2 representing which player's turn it is (initialized with player 1 to keep color order consistent)
         self.winner = None  # JID of the winner
         self.game_running = False  # Whether the game is running or not
+        self.winning_positions = []  # List of winning positions if there is a winner
 
     def addPlayer(self, player: str, username: str) -> int:
         """
@@ -36,24 +37,21 @@ class Connect4Game:
         if player in (self.player1, self.player2):
             return 1
 
-        # Check if the game is already full
         if len(self.jid_username_map) == 2:
             return 2
 
-        # Add the player to the game
+        if self.player1 == "":
+            self.player1 = player
         else:
-            if self.player1 == "":
-                self.player1 = player
-            else:
-                self.player2 = player
-            self.jid_username_map[player] = username
+            self.player2 = player
+        self.jid_username_map[player] = username
 
-            # Start the game if there are 2 players
-            if len(self.jid_username_map) == 2:
-                self.start()
-                return 100
+        # Start the game if there are 2 players
+        if len(self.jid_username_map) == 2:
+            self.start()
+            return 100
 
-            return 0
+        return 0
 
     def get_board(self) -> List[List[int]]:
         return self.board
@@ -160,8 +158,6 @@ class Connect4Game:
 
                 # check if the board is full
                 elif self.is_full():
-                    self.winner = 0  # set the winner to 0 to indicate a tie
-                    self.game_running = False  # end the game
                     return 101  # return 101 to indicate a tie
 
                 # if the move is not a winning move, update the turn
@@ -184,11 +180,11 @@ class Connect4Game:
 
         # check if the player has won in any of the four directions (horizontal, vertical, and both diagonals)
         directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-
+        
         # loop through each direction
         for dr, dc in directions:
             count = 1  # count the number of pieces in a row
-
+            winning_positions = [(row, col)]
             # Loop over both forward (1) and backward (-1) direction to check for pieces.
             for d in (1, -1):
                 # Set up initial row and column for the check in the direction d.
@@ -201,11 +197,15 @@ class Connect4Game:
                 ):
                     # Increment the count and move the row and column in the direction d.
                     count += 1
+                    winning_positions.append((r, c))
                     r += dr * d
                     c += dc * d
 
             # If the player has won in any direction, return True.
             if count >= self.in_a_row:
+                self.winner = self.turn  # set the winner
+                self.game_running = False  # end the game
+                self.winning_positions = winning_positions
                 return True
         return False  # If the player has not won in any direction, return False.
 
@@ -215,12 +215,30 @@ class Connect4Game:
 
     def __str__(self):
         # return a string representation of the board
-        result = "".join(
-            "".join(["🔴" if cell == 1 else "🟡" if cell == 2 else "⚪️" for cell in row])
-            + "\n"
-            for row in self.board
-        )
-
+        if self.game_running:
+            result = "".join(
+                "".join(["🔴" if cell == 1 else "🔵" if cell == 2 else "⚫️" for cell in row])
+                + "\n"
+                for row in self.board
+            )
+        else:
+            # change color of winning pieces
+            winning_positions = self.winning_positions()
+            rows = []
+            for row_idx in range(self.board_height):
+                row = []
+                for col_idx in range(self.board_width):
+                    if (row_idx, col_idx) in winning_positions:
+                        row.append('🟠')
+                    elif self.board[row_idx][col_idx] == 1:
+                        row.append('🔴')
+                    elif self.board[row_idx][col_idx] == 2:
+                        row.append('🔵')
+                    else:
+                        row.append('⚫️')
+                rows.append(' '.join(row))
+            return '\n'.join(rows)
+        
         column_numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
         # add the column numbers to the bottom of the board
@@ -228,7 +246,6 @@ class Connect4Game:
             result += "".join(column_numbers[: self.x])
 
         return result
-
     def start(self):
         # randomly choose which player goes first
         players = [self.player1, self.player2]

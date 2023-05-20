@@ -143,6 +143,8 @@ class Connect4Bot(KikClientCallback):
             self.client.send_chat_message(groupJID, game.__str__())
             self.client.send_chat_message(groupJID, f"{game.get_turn_name()}'s turn")
 
+        return False
+
     def playMove(self, move, playerJID, groupJID):
         # check if game exists
         if groupJID in games:
@@ -220,18 +222,6 @@ class Connect4Bot(KikClientCallback):
 
 def jid_to_username(jid):
     return jid.split("@")[0][:-4]
-
-
-def gameMove(message: str):
-    message = message.split()
-
-    if len(message) != 2:
-        return -1
-
-    if message[0].lower() not in ["c", "connect"]:
-        return -1
-
-    return int(message[1]) if message[1].isdigit() else -1
 
 
 if __name__ == "__main__":
