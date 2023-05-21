@@ -7,7 +7,7 @@ class Connect4Game:
         # build the board
         self.in_a_row = in_a_row  # Number of pieces in a row to win
         self.x = in_a_row * 2 - 1  # Width of the board
-        self.y = in_a_row + 2 # Height of the board
+        self.y = in_a_row + 2  # Height of the board
         # 2D array representing the board. 0 is empty, 1 is player 1, 2 is player 2
         self.board = [[0 for _ in range(self.x)] for _ in range(self.y)]
 
@@ -180,7 +180,7 @@ class Connect4Game:
 
         # check if the player has won in any of the four directions (horizontal, vertical, and both diagonals)
         directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-        
+
         # loop through each direction
         for dr, dc in directions:
             count = 1  # count the number of pieces in a row
@@ -217,28 +217,30 @@ class Connect4Game:
         # return a string representation of the board
         if self.game_running:
             result = "".join(
-                "".join(["🔴" if cell == 1 else "🔵" if cell == 2 else "⚫️" for cell in row])
+                "".join(
+                    ["🔴" if cell == 1 else "🔵" if cell == 2 else "⚫️" for cell in row]
+                )
                 + "\n"
                 for row in self.board
             )
         else:
             # change color of winning pieces
-            winning_positions = self.winning_positions()
+            winning_positions = self.winning_positions
             rows = []
-            for row_idx in range(self.board_height):
+            for row_idx in range(self.y):
                 row = []
-                for col_idx in range(self.board_width):
+                for col_idx in range(self.x):
                     if (row_idx, col_idx) in winning_positions:
-                        row.append('🟠')
+                        row.append("🟣")
                     elif self.board[row_idx][col_idx] == 1:
-                        row.append('🔴')
+                        row.append("🔴")
                     elif self.board[row_idx][col_idx] == 2:
-                        row.append('🔵')
+                        row.append("🔵")
                     else:
-                        row.append('⚫️')
-                rows.append(' '.join(row))
-            return '\n'.join(rows)
-        
+                        row.append("⚫️")
+                rows.append(" ".join(row))
+            return "\n".join(rows)
+
         column_numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
 
         # add the column numbers to the bottom of the board
@@ -246,6 +248,7 @@ class Connect4Game:
             result += "".join(column_numbers[: self.x])
 
         return result
+
     def start(self):
         # randomly choose which player goes first
         players = [self.player1, self.player2]
