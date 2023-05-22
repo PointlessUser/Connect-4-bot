@@ -5,6 +5,7 @@ import time
 import threading
 from random import shuffle
 from Connect4_game import Connect4Game
+from bumpQuotes import getQuote
 
 from kik_unofficial.client import KikClient
 from kik_unofficial.callbacks import KikClientCallback
@@ -23,10 +24,14 @@ from kik_unofficial.datatypes.xmpp.chatting import (
     IncomingGroupStatus,
 )
 
+from TimerThread import Timer
+
 username = "Username"
 password = "Password"
 
 games = {}
+
+bumpJID = "1100254805149_g@groups.kik.com"
 
 
 def main():
@@ -49,23 +54,53 @@ class Connect4Bot(KikClientCallback):
         self.senderJID = None
         self.senderName = None
         self.groupJID = None
+        self.timer = Timer(60 * 60, self.bump)
+        self.bumpCount = 0
 
     def on_authenticated(self):
         print("Now I'm Authenticated, let's request roster")
-        self.client.request_roster()
+        # self.client.request_roster()
+
+    def bump(self):
+        print("Bump")
+        self.bumpCount += 1
+        self.client.send_chat_message(bumpJID, getQuote(self.bumpCount))
+        self.timer.reset()
 
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
+        self.timer.reset()
+        self.bumpCount = 0
 
         self.senderJID = chat_message.from_jid
         self.groupJID = chat_message.group_jid
         self.message = chat_message.body
         self.senderName = jid_to_username(self.senderJID)
         # get display name of the user who sent the message
-        response = self.client.xiphias_get_users_by_alias([chat_message.from_jid])
+        getDisplayName = not self.processMessage(
+            self.message, self.senderJID, self.groupJID
+        )
+        if getDisplayName:
+            self.client.xiphias_get_users_by_alias([chat_message.from_jid])
 
-    def processMessage(self, message, playerJID, playerName, groupJID):
+    def processDisplayNameMessage(self, message, playerJID, playerName, groupJID):
         message = message.lower()
+        message = message.strip()
+
+        # player is joining a game
+        if message in ["c", "connect"]:
+            self.startGame(playerJID, playerName, groupJID)
+            return True
+
+        message = message.split()
+
+        if len(message) == 2 and (message[0] == "start" and message[1].isdigit()):
+            self.startGame(playerJID, playerName, groupJID, int(message[1]))
+            return True
+
+    def processMessage(self, message, playerJID, groupJID):
+        message = message.lower()
+        message = message.strip()
 
         # check if message
         if message == "reset":
@@ -76,10 +111,28 @@ class Connect4Bot(KikClientCallback):
                 self.client.send_chat_message(groupJID, "No game to reset")
             return True
 
+        # display help message
+        if message == "help":
+            self.client.send_chat_message(
+                groupJID,
+                """Commands: 
+connect or C to join game
+connect # or C # to make a move
+reset to reset game
+ping to check if server is running
+help to display this message
+""",
+            )
+            return True
+
+        # check if server is running
+        elif message == "ping":
+            self.client.send_chat_message(groupJID, "pong")
+            return True
+
         # player is joining a game
         elif message in ["c", "connect"]:
-            self.startGame(playerJID, playerName, groupJID)
-            return True
+            return False
 
         # player is making a move
         else:
@@ -94,8 +147,7 @@ class Connect4Bot(KikClientCallback):
                 return True
 
             if len(message) == 2 and (message[0] == "start" and message[1].isdigit()):
-                self.startGame(playerJID, playerName, groupJID, int(message[1]))
-                return True
+                return False
 
             # check if message is a move
             elif len(message) == 1:
@@ -111,8 +163,8 @@ class Connect4Bot(KikClientCallback):
                     move = int(m2[1])
                     self.playMove(move, playerJID, groupJID)
                 return True
-            else:
-                return False
+
+        return True
 
     def startGame(self, playerJID, playerName, groupJID, gameType=4):
         # start game if not already started
@@ -142,6 +194,9 @@ class Connect4Bot(KikClientCallback):
         elif response == 100:
             self.client.send_chat_message(groupJID, game.__str__())
             self.client.send_chat_message(groupJID, f"{game.get_turn_name()}'s turn")
+
+        else:
+            self.client.send_chat_message(groupJID, "Invalid game type")
 
         return False
 
@@ -215,9 +270,11 @@ class Connect4Bot(KikClientCallback):
             if name is None:
                 name = self.senderName
 
-            self.processMessage(self.message, self.senderJID, name, self.groupJID)
+            self.processDisplayNameMessage(
+                self.message, self.senderJID, name, self.groupJID
+            )
 
-            print(f"Display name for {jid} = {name}")
+            # print(f"Display name for {jid} = {name}")
 
 
 def jid_to_username(jid):

@@ -214,39 +214,29 @@ class Connect4Game:
         return all(self.board[0][i] != 0 for i in range(self.x))
 
     def __str__(self):
-        # return a string representation of the board
-        if self.game_running:
-            result = "".join(
-                "".join(
-                    ["🔴" if cell == 1 else "🔵" if cell == 2 else "⚫️" for cell in row]
-                )
-                + "\n"
-                for row in self.board
+        # create the game board
+        result = "".join(
+            "".join(
+                [
+                    "🟣"
+                    if (row_idx, col_idx) in self.winning_positions
+                    and not self.game_running
+                    else "🔴"
+                    if cell == 1
+                    else "🔵"
+                    if cell == 2
+                    else "⚫️"
+                    for col_idx, cell in enumerate(row)
+                ]
             )
-        else:
-            # change color of winning pieces
-            winning_positions = self.winning_positions
-            rows = []
-            for row_idx in range(self.y):
-                row = []
-                for col_idx in range(self.x):
-                    if (row_idx, col_idx) in winning_positions:
-                        row.append("🟣")
-                    elif self.board[row_idx][col_idx] == 1:
-                        row.append("🔴")
-                    elif self.board[row_idx][col_idx] == 2:
-                        row.append("🔵")
-                    else:
-                        row.append("⚫️")
-                rows.append(" ".join(row))
-            return "\n".join(rows)
+            + "\n"
+            for row_idx, row in enumerate(self.board)
+        )
 
         column_numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-
         # add the column numbers to the bottom of the board
-        if self.x <= 9 and self.x > 0:
+        if 0 < self.x <= 9:
             result += "".join(column_numbers[: self.x])
-
         return result
 
     def start(self):
