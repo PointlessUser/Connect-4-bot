@@ -3,7 +3,12 @@ from typing import List, Tuple
 
 
 class Connect4Game:
-    def __init__(self, player1: str = "", player2: str = "", in_a_row: int = 4):
+    def __init__(
+        self,
+        player1: Tuple[str, str] = ("", ""),
+        player2: Tuple[str, str] = ("", ""),
+        in_a_row: int = 4,
+    ):
         # build the board
         self.in_a_row = in_a_row  # Number of pieces in a row to win
         self.x = in_a_row * 2 - 1  # Width of the board
@@ -12,15 +17,21 @@ class Connect4Game:
         self.board = [[0 for _ in range(self.x)] for _ in range(self.y)]
 
         # initialize players
-        self.player1 = player1  # JID of player 1
-        self.player2 = player2  # JID of player 2
+        self.player1 = ""  # JID of player 1
+        self.player2 = ""  # JID of player 2
         self.jid_username_map = {}  # Map of JID to username
         self.turn = 1  # 1 or 2 representing which player's turn it is (initialized with player 1 to keep color order consistent)
         self.winner = None  # JID of the winner
         self.game_running = False  # Whether the game is running or not
         self.winning_positions = []  # List of winning positions if there is a winner
 
-    def addPlayer(self, player: str, username: str) -> int:
+        # Add players if they are provided
+        if player1[0] and player1[1]:
+            self.addPlayer(player1[0], player1[1])
+        if player2[0] and player2[1]:
+            self.addPlayer(player2[0], player2[1])
+
+    def addPlayer(self, playerJID: str, username: str) -> int:
         """
         Adds a player to the game
 
@@ -34,17 +45,17 @@ class Connect4Game:
         100 if game is starting after adding the player
         """
         # Check if the player is already in the game
-        if player in (self.player1, self.player2):
+        if playerJID in (self.player1, self.player2):
             return 1
 
         if len(self.jid_username_map) == 2:
             return 2
 
         if self.player1 == "":
-            self.player1 = player
+            self.player1 = playerJID
         else:
-            self.player2 = player
-        self.jid_username_map[player] = username
+            self.player2 = playerJID
+        self.jid_username_map[playerJID] = username
 
         # Start the game if there are 2 players
         if len(self.jid_username_map) == 2:
