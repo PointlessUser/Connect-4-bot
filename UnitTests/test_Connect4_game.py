@@ -71,11 +71,11 @@ def test_play():
     # Trying to play as a non-existent player should return 4
     assert game.play("p3_jid", 1) == 4
     # Trying to play in an invalid column should return 2
-    assert game.play(player1, 10) == 2
-    assert game.play(player1, -1) == 2
+    assert game.play(player2, 10) == 2
+    assert game.play(player2, -1) == 2
 
     # A correct move by the right player should return 0
-    assert game.play(player1, 1) == 0
+    assert game.play(player2, 1) == 0
 
 
 @pytest.mark.parametrize(
