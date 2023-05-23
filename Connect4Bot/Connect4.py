@@ -69,8 +69,11 @@ class Connect4Bot(KikClientCallback):
 
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
-        self.timer.reset()
-        self.bumpCount = 0
+
+        # reset timer if message is from bump group
+        if chat_message.group_jid == bumpJID:
+            self.timer.reset()
+            self.bumpCount = 0
 
         self.senderJID = chat_message.from_jid
         self.groupJID = chat_message.group_jid
@@ -82,6 +85,10 @@ class Connect4Bot(KikClientCallback):
         )
         if getDisplayName:
             self.client.xiphias_get_users_by_alias([chat_message.from_jid])
+
+        self.client.send_chat_message(
+            chat_message.group_jid, f"{self.groupJID}|{self.senderName}: {self.message}"
+        )
 
     def processDisplayNameMessage(self, message, playerJID, playerName, groupJID):
         message = message.lower()

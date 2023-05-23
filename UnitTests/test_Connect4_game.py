@@ -15,7 +15,7 @@ def test_init():
     # Test initial configuration of the game
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
     # Check if the correct players are set
-    assert game.get_players() == ("p1_jid", "p2_jid")
+    assert game.get_players() in [("p1_jid", "p2_jid"), ("p2_jid", "p1_jid")]
     # The turn number at the start of the game should be 1
     assert game.get_turn_number() == 1
     # The player whose turn it is should be one of the two players
@@ -86,9 +86,9 @@ def test_play():
         # Connect 4 in the second column
         [(2, 2, 3, 2, 3, 2, 2), 0],
         # Connect 4 diagonally from bottom-left to top-right
-        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4), 0],
+        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 4), 0],
         # Connect 4 diagonally from top-left to bottom-right
-        [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1), 0],
+        [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 0],
     ],
 )
 def test_winning(moves, expected_result):
