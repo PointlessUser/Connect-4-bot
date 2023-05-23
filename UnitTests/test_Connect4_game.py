@@ -33,8 +33,8 @@ def test_addPlayer():
     assert game.addPlayer("p1_jid", "p1_name") == 0
     # Trying to add the same player again should return 1 (player already added)
     assert game.addPlayer("p1_jid", "p1_name") == 1
-    # Adding second player should return 0 (success)
-    assert game.addPlayer("p2_jid", "p2_name") == 0
+    # Adding second player should return 0 (Game is starting)
+    assert game.addPlayer("p2_jid", "p2_name") == 100
     # Trying to add a third player should return 2 (game is full)
     assert game.addPlayer("p3_jid", "p3_name") == 2
 
@@ -50,23 +50,32 @@ def test_get_board():
 def test_play():
     # Test the play method
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
+
+    if game.get_turn_name() == "p1_name":
+        player1 = "p1_jid"
+        player2 = "p2_jid"
+    else:
+        player1 = "p2_jid"
+        player2 = "p1_jid"
+
     # A correct move by the right player should return 0
-    assert game.play("p1_jid", 1) == 0
+    assert game.play(player1, 1) == 0
     # Trying to play when it's not the player's turn should return 3
-    assert game.play("p1_jid", 1) == 3
+    assert game.play(player1, 1) == 3
     # A correct move by the right player should return 0
-    assert game.play("p2_jid", 1) == 0
+    assert game.play(player2, 1) == 0
     # Trying to play when it's not the player's turn should return 3
-    assert game.play("p2_jid", 1) == 3
+    assert game.play(player2, 1) == 3
     # A correct move by the right player should return 0
-    assert game.play("p1_jid", 1) == 0
+    assert game.play(player1, 1) == 0
     # Trying to play as a non-existent player should return 4
     assert game.play("p3_jid", 1) == 4
     # Trying to play in an invalid column should return 2
-    assert game.play("p1_jid", 10) == 2
-    assert game.play("p1_jid", -1) == 2
+    assert game.play(player1, 10) == 2
+    assert game.play(player1, -1) == 2
+
     # A correct move by the right player should return 0
-    assert game.play("p1_jid", 1) == 0
+    assert game.play(player1, 1) == 0
 
 
 @pytest.mark.parametrize(
