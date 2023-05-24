@@ -50,13 +50,7 @@ def test_get_board():
 def test_play():
     # Test the play method
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
-
-    if game.get_turn_name() == "p1_name":
-        player1 = "p1_jid"
-        player2 = "p2_jid"
-    else:
-        player1 = "p2_jid"
-        player2 = "p1_jid"
+    player1, player2 = game.get_players()
 
     # A correct move by the right player should return 0
     assert game.play(player1, 1) == 0
@@ -94,30 +88,25 @@ def test_play():
 def test_winning(moves, expected_result):
     # Test winning conditions
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
-    for move in moves[:-1]:
-        assert (
-            game.play("p1_jid" if game.get_turn_name() == "p1_name" else "p2_jid", move)
-            == 0
-        )
+    player1, player2 = game.get_players()
+
+    for i, move in enumerate(moves[:-1]):
+        assert game.play(player1 if i % 2 == 0 else player2, move) == 0
     move = moves[-1]
-    assert (
-        game.play("p1_jid" if game.get_turn_name() == "p1_name" else "p2_jid", move)
-        == expected_result
-    )
+
+    assert game.play(player1 if i % 2 == 0 else player2, move) == expected_result
+
+    winner = player1 if i % 2 == 0 else player2
+
     # The player who connected 4 should be the winner
-    assert game.get_winner() == ("p1_name" if moves.count(1) % 2 == 0 else "p2_name")
+    assert game.get_winner() == winner
 
 
 def test_full_column():
     # Test the scenario where a column is full
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
 
-    if game.get_turn_name() == "p1_name":
-        player1 = "p1_jid"
-        player2 = "p2_jid"
-    else:
-        player1 = "p2_jid"
-        player2 = "p1_jid"
+    player1, player2 = game.get_players()
 
     for _ in range(3):
         assert game.play(player1, 5) == 0
