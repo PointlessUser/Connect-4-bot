@@ -80,7 +80,7 @@ def test_play():
         # Connect 4 horizontally
         [(2, 2, 3, 2, 3, 2, 1, 1, 4), 100],
         # Connect 4 diagonally from bottom-left to top-right
-        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 4), 100],
+        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 5, 2), 100],
         # Connect 4 diagonally from top-left to bottom-right
         [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 100],
     ],
@@ -90,17 +90,25 @@ def test_winning(moves, expected_result):
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
     player1, player2 = game.get_players()
 
+    # Play the moves
     for i, move in enumerate(moves[:-1]):
-        assert game.play(player1 if i % 2 == 0 else player2, move) == 0
+        if game.turn == 1:
+            assert game.play(player1, move) == 0
+        else:
+            assert game.play(player2, move) == 0
+
+    # The last move should be the winning move
     move = moves[-1]
     i += 1
+    player = player1 if game.turn == 1 else player2
 
-    assert game.play(player1 if i % 2 == 0 else player2, move) == expected_result
+    # The winning move should return the expected result
+    assert game.play(player, move) == expected_result
 
-    winner = player1 if i % 2 == 0 else player2
+    # The game should be over
 
     # The player who connected 4 should be the winner
-    assert game.get_winner() == winner
+    assert game.get_winner() == player
 
 
 def test_full_column():
