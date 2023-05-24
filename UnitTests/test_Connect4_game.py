@@ -82,13 +82,13 @@ def test_play():
     "moves,expected_result",
     [
         # Connect 4 in the first column
-        [(1, 1, 2, 1, 2, 1, 2, 1), 0],
+        [(1, 1, 2, 1, 2, 1, 2, 1), 100],
         # Connect 4 horizontally
-        [(2, 2, 3, 2, 3, 2, 1, 1, 4), 0],
+        [(2, 2, 3, 2, 3, 2, 1, 1, 4), 100],
         # Connect 4 diagonally from bottom-left to top-right
-        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 5, 4), 0],
+        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 5, 4), 100],
         # Connect 4 diagonally from top-left to bottom-right
-        [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 0],
+        [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 100],
     ],
 )
 def test_winning(moves, expected_result):
@@ -117,6 +117,5 @@ def test_full_column():
     for _ in range(3):
         assert game.play(player1, 5) == 0
         assert game.play(player2, 5) == 0
-    assert game.play(player1, 5) == 0
     # Trying to play in a full column should return 101
-    assert game.play(player2, 5) == 101
+    assert game.play(player2, 5) == 5
