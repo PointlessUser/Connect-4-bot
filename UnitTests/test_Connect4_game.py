@@ -83,6 +83,8 @@ def test_play():
         [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 5, 2), 100],
         # Connect 4 diagonally from top-left to bottom-right
         [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 100],
+        # Connect 4 drawn game
+        [(4, 3, 2, 1, 5, 6, 7, 6, 5, 4, 3, 2, 1, 5, 4, 3, 2, 1, 7, 6, 6, 7, 4, 5, 3, 4, 2, 2, 3, 1, 5, 6, 7, 7, 7, 6, 5, 4, 3, 2, 1, 1), 101]
     ],
 )
 def test_winning(moves, expected_result):
@@ -108,7 +110,10 @@ def test_winning(moves, expected_result):
     # The game should be over
 
     # The player who connected 4 should be the winner
-    assert game.get_winner() == player
+    if expected_result == 100:
+        assert game.get_winner() == player
+    else:
+        assert game.get_winner() is None
 
 
 def test_full_column():
