@@ -80,7 +80,7 @@ def test_play():
         # Connect 4 horizontally
         [(2, 2, 3, 2, 3, 2, 1, 1, 4), 100],
         # Connect 4 diagonally from bottom-left to top-right
-        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 5, 4), 100],
+        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 4), 100],
         # Connect 4 diagonally from top-left to bottom-right
         [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 100],
     ],
@@ -94,6 +94,7 @@ def test_winning(moves, expected_result):
         assert game.play(player1 if i % 2 == 0 else player2, move) == 0
     move = moves[-1]
     i += 1
+
     assert game.play(player1 if i % 2 == 0 else player2, move) == expected_result
 
     winner = player1 if i % 2 == 0 else player2
