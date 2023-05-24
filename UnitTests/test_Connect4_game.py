@@ -93,7 +93,7 @@ def test_winning(moves, expected_result):
     for i, move in enumerate(moves[:-1]):
         assert game.play(player1 if i % 2 == 0 else player2, move) == 0
     move = moves[-1]
-
+    i += 1
     assert game.play(player1 if i % 2 == 0 else player2, move) == expected_result
 
     winner = player1 if i % 2 == 0 else player2
