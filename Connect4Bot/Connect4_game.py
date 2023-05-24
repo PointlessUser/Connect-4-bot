@@ -87,11 +87,19 @@ class Connect4Game:
     def get_winner(self) -> str or None:
         """Returns the JID of the winner (str), or None if there is no winner"""
         if self.winner == 1:
+            return self.player1
+        elif self.winner == 2:
+            return self.player2
+        return None
+
+    def get_winner_name(self) -> str or None:
+        """Returns the name of the winner (str), or None if there is no winner"""
+        if self.winner == 1:
             return self.jid_username_map[self.player1]
         elif self.winner == 2:
             return self.jid_username_map[self.player2]
         return None
-
+    
     def get_players(self) -> Tuple[str, str]:
         """Returns the JIDs of the players (str, str)"""
         return self.player1, self.player2
