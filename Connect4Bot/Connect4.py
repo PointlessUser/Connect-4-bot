@@ -170,8 +170,8 @@ help to display this message
             # check if message is a move
             elif len(message) == 1:
                 message = message[0]
-                m1 = message.split("c")[-1]
-                m2 = message.split("connect")[-1]
+                m1 = message.split("c")
+                m2 = message.split("connect")
 
                 if len(m1) == 2 and m1[1].isdigit():
                     move = int(m1[1])
@@ -257,7 +257,7 @@ help to display this message
         # Game ended successfully
         elif response == 100:
             self.client.send_chat_message(groupJID, game.__str__())
-            self.client.send_chat_message(groupJID, f"{game.get_winner()} won!")
+            self.client.send_chat_message(groupJID, f"{game.get_winner_name()} won!")
             games.pop(groupJID)
 
         # Game ended in a draw
