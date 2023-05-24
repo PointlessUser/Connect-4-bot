@@ -24,6 +24,7 @@ class Connect4Game:
         self.winner = None  # JID of the winner
         self.game_running = False  # Whether the game is running or not
         self.winning_positions = []  # List of winning positions if there is a winner
+        self.winningColor = '🟡' # Color of the winning pieces
 
         # Add players if they are provided
         if player1[0] and player1[1]:
@@ -165,6 +166,7 @@ class Connect4Game:
                 if self.check_winner(self.turn, row, col):
                     self.winner = self.turn  # set the winner
                     self.game_running = False  # end the game
+                    self.winningColor = '🟠' if self.turn == 1 else '🟣'
                     return 100  # return 100 to indicate a winning move
 
                 # check if the board is full
@@ -229,7 +231,7 @@ class Connect4Game:
         result = "".join(
             "".join(
                 [
-                    "🟣"
+                    self.winningColor
                     if (row_idx, col_idx) in self.winning_positions
                     and not self.game_running
                     else "🔴"

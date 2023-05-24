@@ -6,6 +6,7 @@ import threading
 from random import shuffle
 from Connect4_game import Connect4Game
 from bumpQuotes import getQuote
+from functools import partial
 
 from kik_unofficial.client import KikClient
 from kik_unofficial.callbacks import KikClientCallback
@@ -29,9 +30,9 @@ from TimerThread import Timer
 username = "Username"
 password = "Password"
 
-games = {}
+bumpTime = 60 * 60  # 1 hour
 
-bumpJID = "1100254805149_g@groups.kik.com"
+games = {}  # Map of JID to Connect4Game
 
 
 def main():
@@ -43,7 +44,8 @@ def main():
     logger.addHandler(stream_handler)
 
     # create the bot
-    bot = Connect4Bot()
+    # bot = Connect4Bot()
+    Connect4Bot()
 
 
 class Connect4Bot(KikClientCallback):
@@ -54,26 +56,39 @@ class Connect4Bot(KikClientCallback):
         self.senderJID = None
         self.senderName = None
         self.groupJID = None
-        self.timer = Timer(60 * 60, self.bump)
-        self.bumpCount = 0
+        self.bumpJIDs = {
+            # mine
+            "1100254805149_g@groups.kik.com": [
+                Timer(bumpTime, partial(self.bump, "1100254805149_g@groups.kik.com")),
+                0,
+            ],
+            # friend
+            "1100253900967_g@groups.kik.com": [
+                Timer(bumpTime, partial(self.bump, "1100253900967_g@groups.kik.com")),
+                0,
+            ],
+        }
 
     def on_authenticated(self):
         print("Now I'm Authenticated, let's request roster")
         # self.client.request_roster()
 
-    def bump(self):
+    def bump(self, bumpJID):
         print("Bump")
-        self.bumpCount += 1
-        self.client.send_chat_message(bumpJID, getQuote(self.bumpCount))
-        self.timer.reset()
+        if bumpJID in self.bumpJIDs:
+            self.bumpJIDs[bumpJID][1] += 1
+            self.client.send_chat_message(bumpJID, getQuote(self.bumpJIDs[bumpJID][1]))
+            self.bumpJIDs[bumpJID][0].reset()
 
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
 
         # reset timer if message is from bump group
-        if chat_message.group_jid == bumpJID:
-            self.timer.reset()
-            self.bumpCount = 0
+        if chat_message.group_jid in self.bumpJIDs:
+            timer = self.bumpJIDs[chat_message.group_jid][0]
+            timer.reset()
+
+            self.bumpJIDs[chat_message.group_jid][1] = 0
 
         self.senderJID = chat_message.from_jid
         self.groupJID = chat_message.group_jid
@@ -85,10 +100,6 @@ class Connect4Bot(KikClientCallback):
         )
         if getDisplayName:
             self.client.xiphias_get_users_by_alias([chat_message.from_jid])
-
-        self.client.send_chat_message(
-            chat_message.group_jid, f"{self.groupJID}|{self.senderName}: {self.message}"
-        )
 
     def processDisplayNameMessage(self, message, playerJID, playerName, groupJID):
         message = message.lower()

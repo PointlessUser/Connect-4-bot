@@ -82,11 +82,11 @@ def test_play():
     "moves,expected_result",
     [
         # Connect 4 in the first column
-        [(1, 1, 2, 1, 2, 1, 1), 0],
-        # Connect 4 in the second column
-        [(2, 2, 3, 2, 3, 2, 2), 0],
+        [(1, 1, 2, 1, 2, 1, 2, 1), 0],
+        # Connect 4 horizontally
+        [(2, 2, 3, 2, 3, 2, 1, 1, 4), 0],
         # Connect 4 diagonally from bottom-left to top-right
-        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 4), 0],
+        [(1, 2, 1, 3, 1, 1, 3, 3, 4, 2, 2, 4, 4, 3, 3, 1, 5, 4), 0],
         # Connect 4 diagonally from top-left to bottom-right
         [(4, 3, 4, 2, 4, 4, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 5), 0],
     ],
@@ -106,9 +106,17 @@ def test_winning(moves, expected_result):
 def test_full_column():
     # Test the scenario where a column is full
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
+
+    if game.get_turn_name() == "p1_name":
+        player1 = "p1_jid"
+        player2 = "p2_jid"
+    else:
+        player1 = "p2_jid"
+        player2 = "p1_jid"
+
     for _ in range(3):
-        assert game.play("p1_jid", 5) == 0
-        assert game.play("p2_jid", 5) == 0
-    assert game.play("p1_jid", 5) == 0
+        assert game.play(player1, 5) == 0
+        assert game.play(player2, 5) == 0
+    assert game.play(player1, 5) == 0
     # Trying to play in a full column should return 101
-    assert game.play("p2_jid", 5) == 101
+    assert game.play(player2, 5) == 101

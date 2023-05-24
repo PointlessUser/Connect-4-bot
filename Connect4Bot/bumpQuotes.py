@@ -44,6 +44,32 @@ hopeful = [
     "Quiet now, but I'm still hopeful. The game is always more thrilling after a bit of suspense.",
     "Idle for now, but still waiting with optimism. Every moment is ripe with the potential for a new game.",
     "Silence, but every second of it is just anticipation building for our next exciting match.",
+    "A pause in the action? That's okay. It's just the calm before the storm of our next exciting game.",
+    "The silence is just a sign of the thrilling gameplay that's about to unfold. Can't wait!",
+    "No activity? That's alright. It's just the suspense before our next epic match.",
+    "The board may be idle, but my spirit is high. Looking forward to our next game!",
+    "A quiet moment? That's fine. It's just the prelude to our next exciting round of Connect 4.",
+    "No moves for a while, but that's okay. The anticipation is just building for our next thrilling game.",
+    "The board is silent, but my enthusiasm is not. Can't wait for our next match!",
+    "It's been quiet, but I'm still hopeful. Every pause is just a prelude to the next exciting game.",
+    "No activity yet? That's alright. The silence is just the buildup to our next thrilling match.",
+    "The board may be idle, but my spirit for the game is not. Looking forward to our next round!",
+    "The board is silent, much like the universe before the Big Bang. But just as the universe exploded into existence, so too will our next game!",
+    "In the grand scheme of existence, a moment of silence is but a blink. And in the next blink, we could be in the middle of an epic Connect 4 battle!",
+    "The silence is profound, much like the mysteries of life. But fear not, for the answer to our silence is a thrilling game of Connect 4!",
+    "The board is as quiet as a philosopher in deep thought. But remember, even philosophers need a break for a game of Connect 4!",
+    "In the grand theater of life, silence is but an intermission. And what better way to resume the show than with a game of Connect 4?",
+    "The silence is as deep as the ocean, but fear not. For just as the ocean teems with life, so too does our potential for a thrilling game!",
+    "The board is silent, much like a monk in meditation. But even monks break their silence for a good game of Connect 4!",
+    "The silence is as profound as the cosmos, but remember, even the cosmos is punctuated by stars. Let's light up our game board with some Connect 4 action!",
+    "The board is as quiet as a library, but remember, even libraries have game sections. Let's break the silence with a game of Connect 4!",
+    "The silence is as deep as a well, but fear not. For just as a well holds refreshing water, so too does our game hold the potential for refreshing fun!",
+    "Silence, like existence, is fleeting. Let's fill it with Connect 4!",
+    "In the grand void, a game of Connect 4 is a beacon of hope.",
+    "In the cosmic silence, a Connect 4 challenge awaits!",
+    "My soul is as quiet as the board, but my spirit is as loud as the game!",
+    "The board is as quiet as a library, but remember, even libraries have game sections. Let's break the silence with a game of Connect 4!",
+    "I'm bored, but I'm not boring. Let's play Connect 4!",
 ]
 
 
@@ -69,6 +95,7 @@ sad_but_hopeful = [
     "No player? It's fine. The dawn always follows the darkest night.",
     "Neglected, but still hopeful. After all, every ending marks a new beginning.",
     "No one to play with, but that's okay. It's not about winning, but about the journey.",
+    "STOP LEAVING ME ON READ",
 ]
 
 # 6+ Hours of being forgotten
