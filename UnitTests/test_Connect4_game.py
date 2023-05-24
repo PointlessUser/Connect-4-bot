@@ -94,11 +94,16 @@ def test_play():
 def test_winning(moves, expected_result):
     # Test winning conditions
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
-    for move in moves:
+    for move in moves[:-1]:
         assert (
             game.play("p1_jid" if game.get_turn_name() == "p1_name" else "p2_jid", move)
-            == expected_result
+            == 0
         )
+    move = moves[-1]
+    assert (
+        game.play("p1_jid" if game.get_turn_name() == "p1_name" else "p2_jid", move)
+        == expected_result
+    )
     # The player who connected 4 should be the winner
     assert game.get_winner() == ("p1_name" if moves.count(1) % 2 == 0 else "p2_name")
 
@@ -117,5 +122,5 @@ def test_full_column():
     for _ in range(3):
         assert game.play(player1, 5) == 0
         assert game.play(player2, 5) == 0
-    # Trying to play in a full column should return 101
-    assert game.play(player2, 5) == 5
+    # Trying to play in a full column should return 5
+    assert game.play(player1, 5) == 5
