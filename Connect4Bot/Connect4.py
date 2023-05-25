@@ -31,6 +31,7 @@ username = "Username"
 password = "Password"
 
 bumpTime = 60 * 60  # 1 hour
+bumpResponse = "Yay someone talked!" 
 
 games = {}  # Map of JID to Connect4Game
 
@@ -61,11 +62,13 @@ class Connect4Bot(KikClientCallback):
             "1100254805149_g@groups.kik.com": [
                 Timer(bumpTime, partial(self.bump, "1100254805149_g@groups.kik.com")),
                 0,
+                False
             ],
             # friend
             "1100253900967_g@groups.kik.com": [
                 Timer(bumpTime, partial(self.bump, "1100253900967_g@groups.kik.com")),
                 0,
+                False,
             ],
         }
 
@@ -77,8 +80,10 @@ class Connect4Bot(KikClientCallback):
         print("Bump")
         if bumpJID in self.bumpJIDs:
             self.bumpJIDs[bumpJID][1] += 1
+            self.bumpJIDs[bumpJID][2] = True
             self.client.send_chat_message(bumpJID, getQuote(self.bumpJIDs[bumpJID][1]))
             self.bumpJIDs[bumpJID][0].reset()
+            
 
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
@@ -87,7 +92,9 @@ class Connect4Bot(KikClientCallback):
         if chat_message.group_jid in self.bumpJIDs:
             timer = self.bumpJIDs[chat_message.group_jid][0]
             timer.reset()
-
+            if self.bumpJIDs[chat_message.group_jid][2]:
+                self.client.send_chat_message(chat_message.group_jid, bumpResponse)
+                self.bumpJIDs[chat_message.group_jid][2] = False
             self.bumpJIDs[chat_message.group_jid][1] = 0
 
         self.senderJID = chat_message.from_jid
@@ -116,7 +123,13 @@ class Connect4Bot(KikClientCallback):
             self.startGame(playerJID, playerName, groupJID, int(message[1]))
             return True
 
+# TODO move this to a different file
     def processMessage(self, message, playerJID, groupJID):
+        
+        # Echo message to group        
+        if message.lower().startswith("echo "):
+            self.client.send_chat_message(groupJID, message[5:])
+        
         message = message.lower()
         message = message.strip()
 
