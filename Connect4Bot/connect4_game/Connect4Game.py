@@ -174,7 +174,7 @@ class Connect4Game:
                 if self.check_winner(self.turn, row, col):
                     self.winner = self.turn  # set the winner
                     self.game_running = False  # end the game
-                    self.winningColor = '🟠' if self.turn == 1 else '🟣'
+                    # self.winningColor = '🟠' if self.turn == 1 else '🟣'
                     return 100  # return 100 to indicate a winning move
 
                 # check if the board is full
@@ -254,9 +254,9 @@ class Connect4Game:
             for row_idx, row in enumerate(self.board)
         )
 
-        column_numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
         # add the column numbers to the bottom of the board
         if 0 < self.x <= 9:
+            column_numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
             result += "".join(column_numbers[: self.x])
         return result
 
