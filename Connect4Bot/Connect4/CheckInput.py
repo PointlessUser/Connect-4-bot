@@ -111,7 +111,7 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
         chat_message (IncomingGroupChatMessage): chat message received from group
 
     Returns:
-        _type_: _description_
+        str: message to send to group
     """
     
     group_jid = chat_message.group_jid
