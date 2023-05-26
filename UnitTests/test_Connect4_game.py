@@ -8,7 +8,7 @@ PARENT_DIR = os.path.dirname(THIS_DIR)
 
 sys.path.insert(1, f"{PARENT_DIR}/Connect4Bot")
 
-from Connect4_game import Connect4Game
+from connect4_game.Connect4Game import Connect4Game
 
 
 def test_init():
