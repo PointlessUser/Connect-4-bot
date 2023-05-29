@@ -29,7 +29,6 @@ username = "username"
 password = "password"
 
 bumpTime = 60 * 60  # 1 hour
-bumpResponse = "Yay someone talked!" 
 
 games = {}  # Map of JID to Connect4Game
 bumps = {}  # Map of JID to number of bumps
@@ -73,18 +72,25 @@ class Connect4Bot(KikClientCallback):
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
         # reset timer if message is from bump group
+        
+        self.senderJID = chat_message.from_jid
+        self.senderName = chat_message.from_jid.split('@')[0]
+        self.groupJID = chat_message.group_jid
             
         # process bumps
         if output := process_bump(bumps, chat_message, partial(self.bump, chat_message.group_jid)):
             self.client.send_chat_message(chat_message.group_jid, output)
-            
+        
+        # process connect4 game input
         output = process_input(games, chat_message)
         
+        # if display name is needed, get it
         if output == 'Display name needed':
             self.chat_message = chat_message
-            print("here2")
             self.client.xiphias_get_users_by_alias([chat_message.from_jid])
-        elif output != 'Invalid action':
+        
+        # if message isnt invalid action or display name needed, send message
+        elif output != '':
             if type(output) is tuple:
                 for msg in output:
                     self.client.send_chat_message(chat_message.group_jid, msg)

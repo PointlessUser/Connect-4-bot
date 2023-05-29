@@ -4,8 +4,12 @@ from .Connect4Game import Connect4Game
 
 def process_input(games: dict[Connect4Game], chat_message: IncomingGroupChatMessage):
     
-    action = action_needed(chat_message.body)
-    return take_action(games, action, chat_message)
+    if action := action_needed(chat_message.body):
+        return take_action(games, action, chat_message)
+    else:
+        # invalid action
+        return ''
+    
 
 
 
@@ -24,7 +28,6 @@ def action_needed(message: str):
     """
     message = message.lower()
     length = len(message)
-    print(message)
     
     # Check if message is a command
     if message == "ping":
@@ -42,14 +45,16 @@ def action_needed(message: str):
     if (length == 1 and message == "c") or (length == 7 and message == "connect") or (message.startswith('start') and message[5:].strip().isdigit()):
         return 100
     
-    
-    if (message.startswith('c') and message[1:].strip().isdigit()) or (message.startswith('connect') and message[7:].strip().isdigit()):
+    # play move
+    if (message.startswith('c') and message[1:].strip().isdigit()) or (message.startswith('connect') and message[7:].strip().isdigit()) or (message.isdigit()):
         return 101
     
     # Reset game
     if message== 'reset':
         return 102
     
+    # invalid action
+    return 0
     
     
         
@@ -92,7 +97,17 @@ echo to echo message
     
     # play move
     if action == 101:
-        return play_move(message, games, chat_message)
+        message = message.lower()
+        if message.startswith('c') and message[1:].strip().isdigit():
+            move = int(message[1:].strip())
+        elif message.startswith('connect') and message[7:].strip().isdigit():
+            move = int(message[7:].strip())
+        elif message.isdigit():
+            if (chat_message.group_jid in games) and (chat_message.from_jid not in games[chat_message.group_jid].get_players()):
+                return 'Invalid action'
+            move = int(message)
+        
+        return play_move(move, games, chat_message)
     
     if action == 102:
         return reset_game(games, chat_message.group_jid)
@@ -199,8 +214,8 @@ def start_game(games: dict[Connect4Game], display_name: str, chat_message: Incom
 
     # add player to game
     if (response := game.addPlayer(player_jid, display_name)) == 0:
-        f"Connect {game.in_a_row} started"
-        return f"{display_name} joined, Type Connect to join"
+        
+        return (f"Connect {game.in_a_row} started", f"{display_name} joined, Type Connect to join")
 
     # player already in game
     elif response == 1:

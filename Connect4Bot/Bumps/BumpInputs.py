@@ -15,7 +15,7 @@ def process_bump(bumps, chat_message: IncomingGroupChatMessage, bumpResponse):
     if message == "toggle bump":
         if chat_message.group_jid in bumps:
             bumps[chat_message.group_jid]["bump"] = not bumps[chat_message.group_jid]["bump"]
-            if not bumps[chat_message.group_jid]:
+            if not bumps[chat_message.group_jid]["bump"] :
                 return "Bump will not trigger"
 
             #time = bumps[chat_message.group_jid]["timer"].get_timeout()
