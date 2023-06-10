@@ -25,8 +25,8 @@ from Bumps.BumpInputs import process_bump
 from Bumps.bumpQuotes import getQuote
 from Connect4.CheckInput import *
 
-username = "username"
-password = "password"
+username = input("Username: ")
+password = input("Password: ")
 
 bumpTime = 60 * 60  # 1 hour
 

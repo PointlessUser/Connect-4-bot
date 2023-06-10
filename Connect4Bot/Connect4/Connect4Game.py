@@ -1,7 +1,6 @@
 from random import shuffle
 from typing import List, Tuple
 
-
 class Connect4Game:
     def __init__(
         self,

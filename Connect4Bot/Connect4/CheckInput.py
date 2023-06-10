@@ -1,18 +1,18 @@
 from kik_unofficial.datatypes.xmpp.chatting import IncomingGroupChatMessage
 from .Connect4Game import Connect4Game
 
+from pickle import load, dump
+
+leaderboard_file = 'leaderboard.pkl'
+leaderboard = {}
 
 def process_input(games: dict[Connect4Game], chat_message: IncomingGroupChatMessage):
-    
     if action := action_needed(chat_message.body):
         return take_action(games, action, chat_message)
     else:
         # invalid action
         return ''
     
-
-
-
 def action_needed(message: str):
     """ 
     Returns what needs to be done based on the input message
@@ -28,31 +28,35 @@ def action_needed(message: str):
     """
     message = message.lower()
     length = len(message)
-    
+
     # Check if message is a command
     if message == "ping":
         return 1
-    
+
     # Echo message to group        
     if message.startswith("echo "):
         return 2
-    
+
     # How to use the bot
     if message == "help":
         return 3
-    
+
+    # leaderboard
+    if message in {"leaderboard", "lb"}:
+        return 4
+
     # join/start game (needs display name)
     if (length == 1 and message == "c") or (length == 7 and message == "connect") or (message.startswith('start') and message[5:].strip().isdigit()):
         return 100
-    
+
     # play move
     if (message.startswith('c') and message[1:].strip().isdigit()) or (message.startswith('connect') and message[7:].strip().isdigit()) or (message.isdigit()):
         return 101
-    
+
     # Reset game
-    if message== 'reset':
+    if message == 'reset':
         return 102
-    
+
     # invalid action
     return 0
     
@@ -71,15 +75,15 @@ def take_action(games: dict[Connect4Game], action: int, chat_message: IncomingGr
     """
     
     message = chat_message.body
-    
+
     # ping to check if server is running
     if action == 1:
         return "pong"
-    
+
     # Echo message to group
     if action == 2:
         return message[5:]
-    
+
     # How to use the bot
     if action == 3:
         return """Commands:
@@ -91,10 +95,28 @@ ping to check if server is running
 echo to echo message
 """
 
+    # leaderboard
+    if action == 4:
+        leaderboard_file = 'leaderboard.pkl'
+        try:
+            leaderboard = load(open(leaderboard_file, 'rb'))
+        except Exception:
+            leaderboard = {}
+            return "The leaderboard is empty"
+        
+        leaderboard_sorted = sorted(leaderboard.items(), key=lambda x: x[1][1], reverse=True)
+        leaderboard_string = "Leaderboard:\n"
+        for i, score in enumerate(leaderboard_sorted):
+            leaderboard_string += f"{i + 1}: {score[1][0]} ({score[1][1]})\n"
+        
+        return leaderboard_string
+        
+        
+
     # join/start game (needs display name)
     if action == 100:
         return 'Display name needed'
-    
+
     # play move
     if action == 101:
         message = message.lower()
@@ -106,12 +128,12 @@ echo to echo message
             if (chat_message.group_jid in games) and (chat_message.from_jid not in games[chat_message.group_jid].get_players()):
                 return 'Invalid action'
             move = int(message)
-        
+
         return play_move(move, games, chat_message)
-    
+
     if action == 102:
         return reset_game(games, chat_message.group_jid)
-    
+
     # invalid action
     return 'Invalid action'
         
@@ -167,7 +189,21 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
 
     # Game ended successfully
     elif response == 100:
+        leaderboard_file = 'leaderboard.pkl'
         games.pop(group_jid)
+        try:
+            leaderboard = load(open(leaderboard_file, 'rb'))
+        except Exception:
+            leaderboard = {}
+            dump(leaderboard, open(leaderboard_file, 'wb'))
+            
+        if game.get_winner() in leaderboard:
+            leaderboard[game.get_winner()][0] += game.get_winner_name()
+            leaderboard[game.get_winner()][1] += 1
+        else:
+            leaderboard[game.get_winner()] = [game.get_winner_name(), 1]
+        
+        dump(leaderboard, open(leaderboard_file, 'wb'))
         return game.__str__(), f"{game.get_winner_name()} won!"
 
     # Game ended in a draw
