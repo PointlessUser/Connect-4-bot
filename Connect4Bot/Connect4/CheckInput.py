@@ -6,7 +6,7 @@ from pickle import load, dump
 leaderboard_file = 'leaderboard.pkl'
 leaderboard = {}
 
-def process_input(games: dict(Connect4Game), chat_message: IncomingGroupChatMessage):
+def process_input(games: dict[Connect4Game], chat_message: IncomingGroupChatMessage):
     if action := action_needed(chat_message.body):
         return take_action(games, action, chat_message)
     else:
@@ -62,7 +62,7 @@ def action_needed(message: str):
     
     
         
-def take_action(games: dict(Connect4Game), action: int, chat_message: IncomingGroupChatMessage):
+def take_action(games: dict[Connect4Game], action: int, chat_message: IncomingGroupChatMessage):
     """
     Acts on the action needed
     
@@ -139,7 +139,7 @@ echo to echo message
         
 
 
-def play_move(move, games: dict(Connect4Game), chat_message: IncomingGroupChatMessage):
+def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMessage):
     """plays a move in the game
 
     Args:
@@ -198,7 +198,7 @@ def play_move(move, games: dict(Connect4Game), chat_message: IncomingGroupChatMe
             dump(leaderboard, open(leaderboard_file, 'wb'))
             
         if game.get_winner() in leaderboard:
-            leaderboard[game.get_winner()][0] = game.get_winner_name()
+            leaderboard[game.get_winner()][0] += game.get_winner_name()
             leaderboard[game.get_winner()][1] += 1
         else:
             leaderboard[game.get_winner()] = [game.get_winner_name(), 1]
@@ -211,7 +211,7 @@ def play_move(move, games: dict(Connect4Game), chat_message: IncomingGroupChatMe
         return game.__str__(), "Game ended in a draw"
 
 
-def reset_game(games: dict(Connect4Game) ,group_jid: str):
+def reset_game(games: dict[Connect4Game] ,group_jid: str):
     """resets the game if its in progress
 
     Args:
@@ -229,7 +229,7 @@ def reset_game(games: dict(Connect4Game) ,group_jid: str):
         return "No game in progress"
 
 
-def start_game(games: dict(Connect4Game), display_name: str, chat_message: IncomingGroupChatMessage):
+def start_game(games: dict[Connect4Game], display_name: str, chat_message: IncomingGroupChatMessage):
     # start game if not already started
     group_jid = chat_message.group_jid
     player_jid = chat_message.from_jid
