@@ -34,19 +34,6 @@ games = {}  # Map of JID to Connect4Game
 bumps = {}  # Map of JID to number of bumps
 
 
-def main():
-    # set up logging
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(logging.Formatter(KikClient.log_format()))
-    logger.addHandler(stream_handler)
-
-    # create the bot
-    # bot = Connect4Bot()
-    Connect4Bot()
-
-
 class Connect4Bot(KikClientCallback):
     def __init__(self):
         self.client = KikClient(self, username, password)
@@ -58,7 +45,7 @@ class Connect4Bot(KikClientCallback):
 
     def on_authenticated(self):
         print("Now I'm Authenticated, let's request roster")
-        # self.client.request_roster()
+        self.client.request_roster()
 
     def bump(self, bumpJID):
         print("Bump")
@@ -126,10 +113,9 @@ class Connect4Bot(KikClientCallback):
 
             
             # print(f"Display name for {jid} = {name}")
-
-
-def jid_to_username(jid):
-    return jid.split("@")[0][:-4]
+    
+    def on_disconnected(self):
+        print("Bot disconnected.")
 
 
 if __name__ == "__main__":

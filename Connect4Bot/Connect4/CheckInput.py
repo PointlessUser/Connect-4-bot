@@ -165,7 +165,10 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
 
     # move was valid
     if response == 0:
-        return game.__str__(), f"{game.get_turn_name()}'s turn"
+        if game.turn == 1:
+            return game.__str__(), f"🔴 {game.get_turn_name()}'s turn 🔴"
+        else:
+            return game.__str__(), f"🟡 {game.get_turn_name()}'s turn 🟡"
 
     # no game in progress
     elif response == 1:
@@ -261,8 +264,11 @@ def start_game(games: dict[Connect4Game], display_name: str, chat_message: Incom
     elif response == 2:
         return "Game already in progress"
 
+    # game started successfully
     elif response == 100:
-        return game.__str__(), f"{game.get_turn_name()}'s turn"
+        return game.__str__(), f"🔴 {game.get_turn_name()}'s turn 🔴"
 
     else:
         return "Invalid game type"
+
+# add return game board as a function
