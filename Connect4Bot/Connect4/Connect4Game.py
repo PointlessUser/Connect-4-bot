@@ -10,10 +10,10 @@ class Connect4Game:
     ):
         # build the board
         self.in_a_row = in_a_row  # Number of pieces in a row to win
-        self.x = in_a_row * 2 - 1  # Width of the board
-        self.y = in_a_row + 2  # Height of the board
+        self.width = in_a_row * 2 - 1  # Width of the board
+        self.height = in_a_row + 2  # Height of the board
         # 2D array representing the board. 0 is empty, 1 is player 1, 2 is player 2
-        self.board = [[0 for _ in range(self.x)] for _ in range(self.y)]
+        self.board = [[0 for _ in range(self.width)] for _ in range(self.height)]
 
         # initialize players
         self.player1 = ""  # JID of player 1
@@ -125,36 +125,27 @@ class Connect4Game:
             100 if the move was successful and the player won
             101 if the move was successful and the game is a tie
         """
-        # convert the location to a 0-indexed column
+        # convert the location to a 0-indexed column (subtract 1 from the location because the columns are 1-indexed)
         location -= 1
 
-        # if the game is not running, return 4
+        # if the game is not running
         if not self.game_running:
             return 1
 
-        # if the game is not running, return 1
-        if location < 0 or location >= self.x:
-            return 2  # Invalid move
+        # if the location is out of bounds
+        if location < 0 or location >= self.width:
+            return 2
 
-        # if the player is not in the game, return 3
-        if (jid == self.player1 and self.turn == 2) or (
-            jid == self.player2 and self.turn == 1
-        ):
-            return 3  # Not player's turn
-
+        # if the player is not in the game
         if jid not in self.jid_username_map:
-            return 4  # Player not in game
-
-        # if the player is in the game and it is their turn, play the piece
-        if (jid == self.player1 and self.turn == 1) or (
-            jid == self.player2 and self.turn == 2
-        ):
-            # drop the piece in the given column
-            # if the move is a winning move, return 100
-            # if it's a tie, return 101
-            # if the column is full return 5
-            # otherwise, return 0
-            return self.drop_piece(location)
+            return 4 
+        
+        # if it's not the player's turn
+        if (jid == self.player1 and self.turn == 2) or (jid == self.player2 and self.turn == 1):
+            return 3
+        
+        # make a move (returns 0 if successful, 5 if the column is full, 100 if the move is a winning move, 101 if the move is a tie)
+        return self.drop_piece(location)
 
     def drop_piece(self, col):
         """Drop a piece in the given column for the current player, checking if it is a winning move, and updating the turn if it is not
@@ -165,22 +156,19 @@ class Connect4Game:
         returns 0 if the move is successful and the game is not over
         """
         # looping from the bottom to the top of the column
-        for row in range(self.y - 1, -1, -1):
+        for row in range(self.height - 1, -1, -1):
             if self.board[row][col] == 0:  # if the space is empty
                 self.board[row][col] = self.turn  # drop the piece
 
                 # check if the move is a winning move
                 if self.check_winner(self.turn, row, col):
-                    self.winner = self.turn  # set the winner
-                    self.game_running = False  # end the game
-                    # self.winningColor = '🟠' if self.turn == 1 else '🟣'
                     return 100  # return 100 to indicate a winning move
 
                 # check if the board is full
                 elif self.is_full():
                     return 101  # return 101 to indicate a tie
 
-                # if the move is not a winning move, update the turn
+                # update the turn
                 self.turn = 2 if self.turn == 1 else 1
 
                 return 0  # return 0 to indicate a successful move
@@ -213,7 +201,7 @@ class Connect4Game:
 
                 # Continue the loop as long as r and c are inside the board and the piece at board[r][c] belongs to the player.
                 while (
-                    0 <= r < self.y and 0 <= c < self.x and self.board[r][c] == player
+                    0 <= r < self.height and 0 <= c < self.width and self.board[r][c] == player
                 ):
                     # Increment the count and move the row and column in the direction d.
                     count += 1
@@ -231,7 +219,7 @@ class Connect4Game:
 
     def is_full(self):
         # check if the board is full
-        return all(self.board[0][i] != 0 for i in range(self.x))
+        return all(cell != 0 for cell in self.board[0])
 
     def __str__(self):
         # create the game board
@@ -254,9 +242,9 @@ class Connect4Game:
         )
 
         # add the column numbers to the bottom of the board
-        if 0 < self.x <= 9:
+        if 0 < self.width <= 9:
             column_numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-            result += "".join(column_numbers[: self.x])
+            result += "".join(column_numbers[: self.width])
         return result
 
     def start(self):

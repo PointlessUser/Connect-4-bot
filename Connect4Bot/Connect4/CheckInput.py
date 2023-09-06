@@ -168,7 +168,7 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
         if game.turn == 1:
             return game.__str__(), f"🔴 {game.get_turn_name()}'s turn 🔴"
         else:
-            return game.__str__(), f"🟡 {game.get_turn_name()}'s turn 🟡"
+            return game.__str__(), f"🔵 {game.get_turn_name()}'s turn 🔵"
 
     # no game in progress
     elif response == 1:

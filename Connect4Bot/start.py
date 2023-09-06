@@ -1,51 +1,62 @@
-import logging
-import sys
+import os
+import yaml
 
 from functools import partial
 
-
 from kik_unofficial.client import KikClient
 from kik_unofficial.callbacks import KikClientCallback
-import kik_unofficial.datatypes.xmpp.chatting as chatting
 from kik_unofficial.datatypes.xmpp.errors import SignUpError, LoginError
-from kik_unofficial.datatypes.xmpp.roster import FetchRosterResponse, PeersInfoResponse
-from kik_unofficial.datatypes.xmpp.login import LoginResponse, ConnectionFailedResponse
-from kik_unofficial.datatypes.xmpp.sign_up import (
-    RegisterResponse,
-    UsernameUniquenessResponse,
-)
-from kik_unofficial.datatypes.xmpp.chatting import (
-    IncomingChatMessage,
-    IncomingGroupChatMessage,
-    IncomingStatusResponse,
-    IncomingGroupStatus,
-)
+from kik_unofficial.datatypes.xmpp.login import ConnectionFailedResponse
+from kik_unofficial.datatypes.xmpp.chatting import IncomingGroupChatMessage
+
 
 from Bumps.BumpInputs import process_bump
 from Bumps.bumpQuotes import getQuote
 from Connect4.CheckInput import *
 
-username = input("Username: ")
-password = input("Password: ")
 
 bumpTime = 60 * 60  # 1 hour
 
 games = {}  # Map of JID to Connect4Game
 bumps = {}  # Map of JID to number of bumps
 
+def main():
+    # The credentials file where you store the bot's login information
+    creds_file = "creds.yaml"
+        
+    # Changes the current working directory to Connect4Bot if it isn't already
+    if not os.path.isfile(creds_file):
+        os.chdir("Connect4Bot")
+    
+    # load the bot's credentials from creds.yaml if it exists, otherwise ask for them for their login information
+    try:
+        with open(creds_file) as f:
+            creds = yaml.safe_load(f)
+    except FileNotFoundError:
+        creds = {'Username': input("Username: "), 'Password': input("Password: ")}
+    
+    bot = Connect4Bot(creds)
+
 
 class Connect4Bot(KikClientCallback):
-    def __init__(self):
-        self.client = KikClient(self, username, password)
-        self.client.wait_for_messages()
-
+    def __init__(self, creds: dict):
+        
+        username = creds["username"]
+        password = creds.get("password") or input("Password: ")
+        kik_node = creds.get("node")
+        device_id = creds.get("device_id")
+        android_id = creds.get("android_id")
+        self.tenor_key = creds.get("tenor_key")
+        
         self.senderJID = None
         self.senderName = None
         self.groupJID = None
 
-    def on_authenticated(self):
-        print("Now I'm Authenticated, let's request roster")
-        self.client.request_roster()
+        # start bot
+        self.client = KikClient(self, username, password, kik_node, device_id, android_id, logging=True)
+        # self.client = KikClient(self, username, password, logging=True)
+        self.client.wait_for_messages()
+    
 
     def bump(self, bumpJID):
         print("Bump")
@@ -54,7 +65,6 @@ class Connect4Bot(KikClientCallback):
             self.client.send_chat_message(bumpJID, getQuote(bump['bumpCount']))
             bump["bumpCount"] += 1
             bump["timer"].reset()
-            
 
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
@@ -83,6 +93,10 @@ class Connect4Bot(KikClientCallback):
                     self.client.send_chat_message(chat_message.group_jid, msg)
             else:
                 self.client.send_chat_message(chat_message.group_jid, output)
+                
+        if chat_message.body.lower().startswith("gif "):
+            print("Sending gif")
+            self.client.send_gif_image(chat_message.group_jid, chat_message.body[4:], self.tenor_key)
 
     def on_connection_failed(self, response: ConnectionFailedResponse):
         print(f"[-] Connection failed: {response.message}")
@@ -116,17 +130,8 @@ class Connect4Bot(KikClientCallback):
     
     def on_disconnected(self):
         print("Bot disconnected.")
+        
 
 
 if __name__ == "__main__":
-    # set up logging
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(logging.Formatter(KikClient.log_format()))
-    logger.addHandler(stream_handler)
-
-    # create the client
-    callback = Connect4Bot()
-    client = KikClient(callback=callback, kik_username=username, kik_password=password)
-    client.wait_for_messages()
+    main()
