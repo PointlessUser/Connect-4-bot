@@ -40,7 +40,6 @@ def main():
 
 class Connect4Bot(KikClientCallback):
     def __init__(self, creds: dict):
-        
         username = creds["username"]
         password = creds.get("password") or input("Password: ")
         kik_node = creds.get("node")
@@ -54,8 +53,13 @@ class Connect4Bot(KikClientCallback):
 
         # start bot
         self.client = KikClient(self, username, password, kik_node, device_id, android_id, logging=True)
-        # self.client = KikClient(self, username, password, logging=True)
+        # self.client = KikClient(self, username, password, kik_node, logging=True)
         self.client.wait_for_messages()
+    
+    # Initialization and Authentication
+    def on_authenticated(self):
+        print("Now I'm Authenticated, let's request roster")
+        # self.client.request_roster()
     
 
     def bump(self, bumpJID):
@@ -84,7 +88,10 @@ class Connect4Bot(KikClientCallback):
         # if display name is needed, get it
         if output == 'Display name needed':
             self.chat_message = chat_message
-            self.client.xiphias_get_users_by_alias([chat_message.from_jid])
+            if self.senderName == '3ajrtbkk3ybdun2wucyhedbwpapsxtxupbnlhnghlbxaugdblerq_a':
+                self.play_with_custom_display_name("Yvaine")
+            else:
+                self.client.xiphias_get_users_by_alias(self.senderJID)
         
         # if message isnt invalid action or display name needed, send message
         elif output != '':
@@ -109,6 +116,7 @@ class Connect4Bot(KikClientCallback):
         print(f"[-] Register error: {response.message}")
 
     def on_xiphias_get_users_response(self, response):
+        print(response)
         for user in response.users:
             name = user.display_name
 
@@ -127,6 +135,17 @@ class Connect4Bot(KikClientCallback):
 
             
             # print(f"Display name for {jid} = {name}")
+    def play_with_custom_display_name(self, name = None):
+        if name is None:
+            name = self.senderName
+        
+        response = start_game(games, name, self.chat_message)
+        if type(response) is tuple:
+            for msg in response:
+                self.client.send_chat_message(self.groupJID, msg)
+        else:
+            self.client.send_chat_message(self.groupJID, response)
+        
     
     def on_disconnected(self):
         print("Bot disconnected.")

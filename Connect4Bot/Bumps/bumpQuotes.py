@@ -213,7 +213,6 @@ late_insanity = [
 # 24+ Hours of being forgotten
 given_up = [
     "Tick tock, tick tock, tick tock...",
-    "Stanley walked through the red door.",
     "The paint, it's peeling... I wonder what's underneath?",
     "Gosh I'm hungry, what's for dinner?",
     "pssst... hey, you... yeah, you... wanna play Connect 4?",

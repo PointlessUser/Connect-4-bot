@@ -92,7 +92,7 @@ def test_winning(moves, expected_result):
     game = Connect4Game(player1=["p1_jid", "p1_name"], player2=["p2_jid", "p2_name"])
     player1, player2 = game.get_players()
 
-    # Play the moves
+    # Play the moves except the last one
     for i, move in enumerate(moves[:-1]):
         if game.turn == 1:
             assert game.play(player1, move) == 0

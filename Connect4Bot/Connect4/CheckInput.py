@@ -10,7 +10,6 @@ def process_input(games: dict[Connect4Game], chat_message: IncomingGroupChatMess
     if action := action_needed(chat_message.body):
         return take_action(games, action, chat_message)
     else:
-        # invalid action
         return ''
     
 def action_needed(message: str):
@@ -201,7 +200,7 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
             dump(leaderboard, open(leaderboard_file, 'wb'))
             
         if game.get_winner() in leaderboard:
-            leaderboard[game.get_winner()][0] += game.get_winner_name()
+            leaderboard[game.get_winner()][0] = game.get_winner_name()
             leaderboard[game.get_winner()][1] += 1
         else:
             leaderboard[game.get_winner()] = [game.get_winner_name(), 1]
@@ -253,8 +252,7 @@ def start_game(games: dict[Connect4Game], display_name: str, chat_message: Incom
 
     # add player to game
     if (response := game.addPlayer(player_jid, display_name)) == 0:
-        
-        return (f"Connect {game.in_a_row} started", f"{display_name} joined, Type Connect to join")
+        return (f"Connect {game.in_a_row} started", f"{display_name} joined, type \"C\" to join")
 
     # player already in game
     elif response == 1:

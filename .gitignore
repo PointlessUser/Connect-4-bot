@@ -2,3 +2,4 @@
 .gitattributes
 *.pyc
 *.yaml
+*.pkl
