@@ -1,5 +1,6 @@
 import os
 import yaml
+import cProfile
 
 from functools import partial
 
@@ -13,7 +14,6 @@ from kik_unofficial.datatypes.xmpp.chatting import IncomingGroupChatMessage
 from Bumps.BumpInputs import process_bump
 from Bumps.bumpQuotes import getQuote
 from Connect4.CheckInput import *
-
 
 bumpTime = 60 * 60  # 1 hour
 
@@ -46,20 +46,19 @@ class Connect4Bot(KikClientCallback):
         device_id = creds.get("device_id")
         android_id = creds.get("android_id")
         self.tenor_key = creds.get("tenor_key")
-        
         self.senderJID = None
         self.senderName = None
         self.groupJID = None
 
         # start bot
-        self.client = KikClient(self, username, password, kik_node, device_id, android_id, logging=True)
+        self.client = KikClient(self, username, password, kik_node, device_id, android_id, logging=True, debug=True)
         # self.client = KikClient(self, username, password, kik_node, logging=True)
         self.client.wait_for_messages()
     
     # Initialization and Authentication
     def on_authenticated(self):
         print("Now I'm Authenticated, let's request roster")
-        # self.client.request_roster()
+        self.client.request_roster()
     
 
     def bump(self, bumpJID):
@@ -73,7 +72,7 @@ class Connect4Bot(KikClientCallback):
     def on_group_message_received(self, chat_message: IncomingGroupChatMessage):
         """Called when a group chat message is received"""
         # reset timer if message is from bump group
-        
+        print("---------------------------------------------------------------")
         self.senderJID = chat_message.from_jid
         self.senderName = chat_message.from_jid.split('@')[0]
         self.groupJID = chat_message.group_jid
@@ -88,11 +87,13 @@ class Connect4Bot(KikClientCallback):
         # if display name is needed, get it
         if output == 'Display name needed':
             self.chat_message = chat_message
-            if self.senderName == '3ajrtbkk3ybdun2wucyhedbwpapsxtxupbnlhnghlbxaugdblerq_a':
-                self.play_with_custom_display_name("Yvaine")
-            else:
-                self.client.xiphias_get_users_by_alias(self.senderJID)
-        
+            # if self.senderName == '3ajrtbkk3ybdun2wucyhedbwpapsxtxupbnlhnghlbxaugdblerq_a':
+            #    self.play_with_custom_display_name("Yvaine")
+            # elif self.senderName == 'vbalbn4l5embfll4sfd3b2tnfih2hvmsgm7s7t3z6emnh53wvhxq_a':
+            #    self.play_with_custom_display_name("Ahri")
+            # else:
+            #     self.client.xiphias_get_users_by_alias(self.senderJID)
+            self.client.xiphias_get_users_by_alias(self.senderJID)
         # if message isnt invalid action or display name needed, send message
         elif output != '':
             if type(output) is tuple:
@@ -116,7 +117,6 @@ class Connect4Bot(KikClientCallback):
         print(f"[-] Register error: {response.message}")
 
     def on_xiphias_get_users_response(self, response):
-        print(response)
         for user in response.users:
             name = user.display_name
 
@@ -138,6 +138,7 @@ class Connect4Bot(KikClientCallback):
     def play_with_custom_display_name(self, name = None):
         if name is None:
             name = self.senderName
+            print(self.senderName)
         
         response = start_game(games, name, self.chat_message)
         if type(response) is tuple:
@@ -153,4 +154,6 @@ class Connect4Bot(KikClientCallback):
 
 
 if __name__ == "__main__":
-    main()
+    def my_function():
+        main()
+    cProfile.run('my_function()')

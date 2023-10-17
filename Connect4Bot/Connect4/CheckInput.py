@@ -83,15 +83,21 @@ def take_action(games: dict[Connect4Game], action: int, chat_message: IncomingGr
     if action == 2:
         return message[5:]
 
-    # How to use the bot
+    # How to use the bot (help)
     if action == 3:
         return """Commands:
-connect or C to join game
-(connect #) or (C#) to make a move
-(example: connect 1 or C2)
-reset to reset game
-ping to check if server is running
-echo to echo message
+Type C to start/join a game
+Type the number to make a move (1-7)
+Type reset to reset game
+Type 'lb' or 'leaderboard' to see the leaderboard
+Type help to see this message
+Type 'start #' to start a game with # in a row (e.g. 'start 5' starts connect 5)
+Type 'Toggle Bump' to bump the group every hour
+Type 'Set Bump #' to set the bump interval to # minutes
+
+Type ping to check if server is running
+Type echo to echo a message
+Type 'gif (search term)' to send a gif (e.g. 'gif cat' sends a gif of a cat)
 """
 
     # leaderboard
@@ -152,11 +158,11 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
     
     group_jid = chat_message.group_jid
     player_jid = chat_message.from_jid
-    
+
     # check if game exists
     if group_jid in games:
         game: Connect4Game = games[group_jid]
-    else:
+    elif not chat_message.body.lower().startswith("connect"):
         return "No game in progress"
 
     # play move
@@ -171,7 +177,8 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
 
     # no game in progress
     elif response == 1:
-        return "No game in progress"
+        if not chat_message.body.lower().startswith("connect"):
+            return "No game in progress"
 
     # invalid move (out of bounds)
     elif response == 2:
@@ -198,13 +205,13 @@ def play_move(move, games: dict[Connect4Game], chat_message: IncomingGroupChatMe
         except Exception:
             leaderboard = {}
             dump(leaderboard, open(leaderboard_file, 'wb'))
-            
+
         if game.get_winner() in leaderboard:
             leaderboard[game.get_winner()][0] = game.get_winner_name()
             leaderboard[game.get_winner()][1] += 1
         else:
             leaderboard[game.get_winner()] = [game.get_winner_name(), 1]
-        
+
         dump(leaderboard, open(leaderboard_file, 'wb'))
         return game.__str__(), f"{game.get_winner_name()} won!"
 
