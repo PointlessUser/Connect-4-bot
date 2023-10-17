@@ -33,7 +33,7 @@ def test_addPlayer():
     assert game.addPlayer("p1_jid", "p1_name") == 0
     # Trying to add the same player again should return 1 (player already added)
     assert game.addPlayer("p1_jid", "p1_name") == 1
-    # Adding second player should return 0 (Game is starting)
+    # Adding second player should return 100 (Game is starting)
     assert game.addPlayer("p2_jid", "p2_name") == 100
     # Trying to add a third player should return 2 (game is full)
     assert game.addPlayer("p3_jid", "p3_name") == 2
