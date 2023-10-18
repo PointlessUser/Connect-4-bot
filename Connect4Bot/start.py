@@ -1,6 +1,7 @@
 import os
 import yaml
 import cProfile
+import random
 
 from functools import partial
 
@@ -51,7 +52,7 @@ class Connect4Bot(KikClientCallback):
         self.groupJID = None
 
         # start bot
-        self.client = KikClient(self, username, password, kik_node, device_id, android_id, logging=True, debug=True)
+        self.client = KikClient(self, username, password, kik_node, device_id, android_id, enable_logging=True, log_level=1)
         # self.client = KikClient(self, username, password, kik_node, logging=True)
         self.client.wait_for_messages()
     
@@ -65,7 +66,9 @@ class Connect4Bot(KikClientCallback):
         print("Bump")
         if bumpJID in bumps and bumps[bumpJID]["bump"]:
             bump = bumps[bumpJID]
-            self.client.send_chat_message(bumpJID, getQuote(bump['bumpCount']))
+            gif = "minion"+random.choice([" ", "s "]) + random.choice(["Happy", "Sad", "Angry", "Laughing", "Crying", "Dancing", "Dabbing", "Sleeping", "Singing","Bored", "Excited"])
+            self.client.send_gif_image(bumpJID, gif, self.tenor_key)
+            # self.client.send_chat_message(bumpJID, getQuote(bump['bumpCount']))
             bump["bumpCount"] += 1
             bump["timer"].reset()
 
@@ -87,13 +90,13 @@ class Connect4Bot(KikClientCallback):
         # if display name is needed, get it
         if output == 'Display name needed':
             self.chat_message = chat_message
-            # if self.senderName == '3ajrtbkk3ybdun2wucyhedbwpapsxtxupbnlhnghlbxaugdblerq_a':
-            #    self.play_with_custom_display_name("Yvaine")
-            # elif self.senderName == 'vbalbn4l5embfll4sfd3b2tnfih2hvmsgm7s7t3z6emnh53wvhxq_a':
-            #    self.play_with_custom_display_name("Ahri")
-            # else:
-            #     self.client.xiphias_get_users_by_alias(self.senderJID)
-            self.client.xiphias_get_users_by_alias(self.senderJID)
+            if self.senderName == '3ajrtbkk3ybdun2wucyhedbwpapsxtxupbnlhnghlbxaugdblerq_a':
+               self.play_with_custom_display_name("Yvaine")
+            elif self.senderName == 'vbalbn4l5embfll4sfd3b2tnfih2hvmsgm7s7t3z6emnh53wvhxq_a':
+               self.play_with_custom_display_name("Ahri")
+            else:
+                self.client.xiphias_get_users_by_alias(self.senderJID)
+            #self.client.xiphias_get_users_by_alias(self.senderJID)
         # if message isnt invalid action or display name needed, send message
         elif output != '':
             if type(output) is tuple:

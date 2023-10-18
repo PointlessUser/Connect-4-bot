@@ -1,5 +1,6 @@
 from kik_unofficial.datatypes.xmpp.chatting import IncomingGroupChatMessage
 from .Connect4Game import Connect4Game
+import random
 
 from pickle import load, dump
 
@@ -134,6 +135,8 @@ Type 'gif (search term)' to send a gif (e.g. 'gif cat' sends a gif of a cat)
                 return 'Invalid action'
             move = int(message)
 
+        if random.randint(0, 1000) == 0:
+            return "That's a horrible move, tf are you doing?"
         return play_move(move, games, chat_message)
 
     if action == 102:
